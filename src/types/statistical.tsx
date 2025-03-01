@@ -1,6 +1,5 @@
-// Define a type based on the Prisma User model
 export type CallCount = {
-  call_count?: bigint; // Prisma may return BigInt
+  call_count?: bigint;
   caller?: string;
   team_name?: string;
 };

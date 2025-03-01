@@ -3,8 +3,11 @@
 import { FormEvent, useState } from "react";
 import { Form, Input } from "@heroui/react";
 import { apiRequest } from "@/utils/apiRequest";
+import { useLoading } from "@/context/LoadingContext";
+import Cookies from "js-cookie";
 
 export default function LoginPage() {
+  const { setLoading } = useLoading();
   const [errors, setErrors] = useState({});
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -28,7 +31,11 @@ export default function LoginPage() {
     }
 
     try {
-      const result = await apiRequest<{ is_first_login: boolean }>({
+      setLoading(true);
+      const result = await apiRequest<{
+        is_first_login: boolean;
+        token: string;
+      }>({
         url: "/auth/login",
         method: "POST",
         body: req,
@@ -36,14 +43,17 @@ export default function LoginPage() {
       });
 
       if (result.success) {
-        if (result.data?.is_first_login) {
+        const { is_first_login, token } = result.data || {};
+        Cookies.set("token", token || "", { expires: 7, path: "/" });
+
+        if (is_first_login) {
           window.location.href = "/update-password";
         } else {
           window.location.href = "/admin/customers";
         }
       }
     } finally {
-      setErrors({ general: "An unexpected error occurred. Please try again." });
+      setLoading(false);
     }
   };
 

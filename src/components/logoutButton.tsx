@@ -1,19 +1,19 @@
 "use client";
 
 import { Button } from "@heroui/react";
-import { apiRequest } from "@/utils/apiRequest";
+import Cookies from "js-cookie";
 
 export default function LogoutButton() {
-  const handleLogout = async () => {
-    const result = await apiRequest({
-      url: "/auth/logout",
-      method: "POST",
-      showToast: true,
+  const clearAllCookies = () => {
+    const allCookies = Cookies.get(); // Get all cookies
+    Object.keys(allCookies).forEach((cookieName) => {
+      Cookies.remove(cookieName, { path: "/" }); // Remove each cookie
     });
+  };
 
-    if (result.success) {
-      window.location.href = "/login"; // Redirect after logout
-    }
+  const handleLogout = async () => {
+    clearAllCookies();
+    window.location.href = "/login"; // Redirect after logout
   };
 
   return (

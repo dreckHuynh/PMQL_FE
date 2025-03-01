@@ -19,7 +19,11 @@ export default function RootLayout({
   const pathname = usePathname();
 
   const menuItems = [
-    { href: "/admin/teams", label: "Tổ" },
+    {
+      href: "/admin/teams",
+      label: "Tổ",
+      hidden: !user?.is_admin, // admin can access
+    },
     { href: "/admin/customers", label: "Khách hàng" },
     {
       href: "/admin/employees",
@@ -29,7 +33,6 @@ export default function RootLayout({
     {
       href: "/admin/statistical",
       label: "Thống kê",
-      hidden: !user?.is_admin,
     },
   ];
 
@@ -41,7 +44,9 @@ export default function RootLayout({
   return (
     <div>
       {/* Navbar */}
-      <nav className="fixed top-0 z-10 w-full bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+      <nav
+        className={`fixed top-0 z-10 bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700 sm:ml-64 sm:w-[calc(100vw_-_16rem)] w-full ml-0`}
+      >
         <div className="px-3 py-3 lg:px-5 lg:pl-3">
           <div className="flex items-center justify-between">
             {/* Sidebar Toggle Button */}

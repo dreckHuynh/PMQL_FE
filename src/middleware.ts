@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
-import { User } from "@prisma/client";
+import { User } from "./types/user";
 
 export function middleware(req: NextRequest) {
   const token = req.cookies.get("token")?.value;

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState, FormEvent } from "react";
@@ -26,14 +27,10 @@ import {
 import { User } from "@/types/user";
 import { apiRequest } from "@/utils/apiRequest";
 import { useAuth } from "@/context/AuthContext";
-import { Team } from "@prisma/client";
 import { ChevronUpDownIcon } from "@heroicons/react/24/outline";
 import { useLoading } from "@/context/LoadingContext";
-
-export const USER_ROLES = [
-  { key: 1, label: "Tổ trưởng" },
-  { key: 2, label: "Tổ viên" },
-];
+import { USER_ROLES } from "@/utils/enum";
+import { Team } from "@/types/team";
 
 export default function EmployeesManagement() {
   const { setLoading } = useLoading();
@@ -100,8 +97,6 @@ export default function EmployeesManagement() {
 
     if (!data.username) validationErrors.username = "Username is required";
     if (!data.name) validationErrors.name = "Name is required";
-    if (!data.team_id) validationErrors.team_id = "Team is required";
-    if (!data.user_role) validationErrors.user_role = "User role is required";
     if (!data.status) validationErrors.status = "Status is required";
     return validationErrors;
   };
@@ -132,11 +127,15 @@ export default function EmployeesManagement() {
     if (Object.keys(newErrors).length > 0) {
       return;
     }
+    delete selectedData?.created_by;
+    if (selectedData) {
+      data.updated_by = Number(user?.id) as any;
+      data.updated_at = new Date().toISOString();
+    }
 
     const requestData = {
       ...selectedData,
       ...data,
-      created_by: user?.id,
     };
 
     try {
@@ -160,12 +159,12 @@ export default function EmployeesManagement() {
     }
   };
 
-  const handleResetPassword = async (id: string) => {
+  const handleResetPassword = async (id: number) => {
     try {
       setIsLoading(true);
       setLoading(true);
       const response = await apiRequest({
-        url: "/users",
+        url: "/employees/reset",
         method: "PUT",
         body: { id },
         showToast: true,
@@ -180,7 +179,7 @@ export default function EmployeesManagement() {
     }
   };
 
-  function getTeamNameById(id: string | null) {
+  function getTeamNameById(id?: number | null) {
     const team = teams.find((team) => team.id === id);
     return team ? team.team_name : "";
   }
@@ -311,7 +310,6 @@ export default function EmployeesManagement() {
 
                 {/* Team ID */}
                 <Select
-                  isDisabled={!user?.is_admin}
                   disableSelectorIconRotation
                   name="team_id"
                   label="Team"

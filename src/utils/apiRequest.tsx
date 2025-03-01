@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { addToast } from "@heroui/react";
+import Cookies from "js-cookie"; // Import js-cookie
 
 export interface ApiRequestParams<T> {
   url: string;
@@ -28,11 +29,20 @@ export const apiRequest = async <R, T = any>({
   showToast = false,
 }: ApiRequestParams<T>): Promise<ApiResponse<R>> => {
   try {
+    // Retrieve token from cookies
+    const token = Cookies.get("token"); // Make sure the token name matches what’s stored in cookies
+    const headers: HeadersInit = {
+      "Content-Type": "application/json",
+    };
+
+    // If token exists, add it to headers
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
     const options: RequestInit = {
       method,
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers,
       ...(body ? { body: JSON.stringify(body) } : {}),
     };
 

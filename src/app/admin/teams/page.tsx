@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
@@ -21,10 +22,10 @@ import {
   Form,
   Selection,
 } from "@heroui/react";
-import { Team } from "@prisma/client";
 import { useAuth } from "@/context/AuthContext";
 import { apiRequest } from "@/utils/apiRequest";
 import { useLoading } from "@/context/LoadingContext";
+import { Team } from "@/types/team";
 
 export default function TeamsPage() {
   const { setLoading } = useLoading();
@@ -85,13 +86,18 @@ export default function TeamsPage() {
 
     try {
       setLoading(true);
+      delete selectedData?.created_by;
+      if (selectedData) {
+        data.updated_by = Number(user?.id) as any;
+        data.updated_at = new Date().toISOString();
+      }
+
       const result = await apiRequest<Team>({
-        url: "/teams",
+        url: selectedData ? `/teams/${selectedData.id}` : "/teams",
         method: selectedData ? "PUT" : "POST",
         body: {
+          ...selectedData,
           ...data,
-          created_by: selectedData ? data.username : user?.username,
-          updated_by: user?.username,
         },
         showToast: true,
       });
@@ -110,16 +116,22 @@ export default function TeamsPage() {
   return (
     <div className="">
       <div className="mb-4 h-11">
-        <Button onPress={onOpen} className="mr-4">
+        <Button
+          onPress={() => {
+            setSelectedData(null);
+            onOpen();
+          }}
+          className="mr-4"
+        >
           Tạo tổ
         </Button>
 
         <Button
           onPress={() => {
-            onOpen();
             const selectedKeysArray = Array.from(selectedKeys) as number[];
             const selectedId: number = selectedKeysArray[0];
             setSelectedData(teams[selectedId] || null);
+            onOpen();
           }}
           color="warning"
           isDisabled={!Array.from(selectedKeys).length}

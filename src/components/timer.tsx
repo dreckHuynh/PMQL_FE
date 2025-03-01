@@ -16,14 +16,14 @@ export default function CurrentTime() {
   return (
     <div className="flex flex-col items-center justify-center text-lg font-semibold text-gray-800">
       <p>
-        {dateTime.toLocaleDateString(undefined, {
+        {dateTime.toLocaleDateString("vi-VN", {
           weekday: "long",
           year: "numeric",
           month: "long",
           day: "numeric",
         })}
       </p>
-      <p>🕒 {dateTime.toLocaleTimeString()}</p>
+      <p>🕒 {dateTime.toLocaleTimeString("vi-VN")}</p>
     </div>
   );
 }

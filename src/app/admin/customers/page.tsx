@@ -23,14 +23,19 @@ import {
   Form,
   Selection,
   Textarea,
+  SortDescriptor,
+  addToast,
 } from "@heroui/react";
-import { Customer, Team } from "@prisma/client";
 import { useAuth } from "@/context/AuthContext";
 import { apiRequest } from "@/utils/apiRequest";
 import { CUSTOMER_STATUS, ROLE_NOTE } from "@/utils/enum";
 import { formatDateTime } from "@/utils/formatDateTime";
 import { ChevronUpDownIcon } from "@heroicons/react/24/outline";
 import { useLoading } from "@/context/LoadingContext";
+import { Customer } from "@/types/customer";
+import { Team } from "@/types/team";
+import { Search } from "lucide-react";
+import { exportToExcel } from "@/utils/exportToExcel";
 
 export default function CustomerManagement() {
   const { setLoading } = useLoading();
@@ -42,13 +47,29 @@ export default function CustomerManagement() {
 
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [customersCheck, setCustomersCheck] = useState<Customer[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const [isLoading, setIsLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [searchCheck, setSearchCheck] = useState("");
 
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [pageCheck, setPageCheck] = useState(1);
+  const [totalPagesCheck, setTotalPagesCheck] = useState(1);
+
+  const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
+    column: "created_at",
+    direction: "ascending",
+  });
+  const [sortDescriptorCheck, setSortDescriptorCheck] =
+    useState<SortDescriptor>({
+      column: "updated_at",
+      direction: "ascending",
+    });
+
   const rowsPerPage = 10;
 
   // Fetch users from API
@@ -70,11 +91,38 @@ export default function CustomerManagement() {
     fetchTeams();
   }, []);
 
+  const fetchCustomersCheck = async (page = 1) => {
+    try {
+      setLoading(true);
+      const result = await apiRequest<Customer[]>({
+        url: `/customers/check?page=${page}&limit=${rowsPerPage}&search=${searchCheck}&order_by=${
+          sortDescriptorCheck.column
+        }&order_type=${
+          sortDescriptorCheck.direction === "ascending" ? "asc" : "desc"
+        }`,
+      });
+
+      if (result.success) {
+        setCustomersCheck(result.data || []);
+        setTotalPagesCheck(result.totalPages || 0);
+      }
+    } catch (error) {
+      console.error("Failed to fetch customers:", error);
+    } finally {
+      setIsLoading(false);
+      setLoading(false);
+    }
+  };
+
   const fetchCustomers = async (page = 1) => {
     try {
       setLoading(true);
       const result = await apiRequest<Customer[]>({
-        url: `/customers?page=${page}&limit=${rowsPerPage}`,
+        url: `/customers?page=${page}&limit=${rowsPerPage}&search=${search}&order_by=${
+          sortDescriptor.column
+        }&order_type=${
+          sortDescriptor.direction === "ascending" ? "asc" : "desc"
+        }`,
       });
 
       if (result.success) {
@@ -89,10 +137,13 @@ export default function CustomerManagement() {
     }
   };
 
-  // Fetch users from API
   useEffect(() => {
     fetchCustomers(page);
-  }, [page]);
+  }, [page, sortDescriptor]);
+
+  useEffect(() => {
+    fetchCustomersCheck(pageCheck);
+  }, [pageCheck, sortDescriptorCheck]);
 
   const validate = (data: { [k: string]: FormDataEntryValue }) => {
     const validationErrors: Record<string, string> = {};
@@ -110,10 +161,6 @@ export default function CustomerManagement() {
     // Validate year_of_birth
     if (!data.year_of_birth)
       validationErrors.year_of_birth = "Year of birth is required";
-
-    // Validate team_id
-    if (!data.team_id) validationErrors.team_id = "Team is required";
-
     // Validate status
     if (!data.status) validationErrors.status = "Status is required";
 
@@ -145,7 +192,8 @@ export default function CustomerManagement() {
       });
 
       if (result.success) {
-        fetchCustomers();
+        await fetchCustomers();
+        await fetchCustomersCheck();
         onClose();
       }
     } catch (error) {
@@ -155,6 +203,8 @@ export default function CustomerManagement() {
 
   const updateCustomer = async (data: { [k: string]: FormDataEntryValue }) => {
     try {
+      delete selectedData?.created_by;
+
       const result = await apiRequest<Customer>({
         url: "/customers",
         method: "PUT",
@@ -163,12 +213,14 @@ export default function CustomerManagement() {
           ...data,
           team_id: Number(data.team_id || selectedData?.team_id),
           updated_by: Number(user?.id),
+          updated_at: new Date().toISOString(),
         },
         showToast: true,
       });
 
       if (result.success) {
-        fetchCustomers();
+        await fetchCustomers();
+        await fetchCustomersCheck();
         onClose();
       }
     } catch (error) {
@@ -203,10 +255,15 @@ export default function CustomerManagement() {
     }
   };
 
-  const getCustomerStatusLabel = (key: string | null): string | undefined => {
-    return (
-      CUSTOMER_STATUS.find((status) => `${status.key}` === key)?.label || "-"
-    );
+  const getCustomerStatusLabel = (key: string | null) => {
+    const status = CUSTOMER_STATUS.find((status) => `${status.key}` === key);
+    return status?.label || "";
+  };
+
+  const getCustomerRoleNoteLabel = (
+    key?: string | null
+  ): string | undefined => {
+    return ROLE_NOTE.find((status) => `${status.key}` === key)?.label || "-";
   };
 
   const deleteCustomer = async () => {
@@ -218,8 +275,46 @@ export default function CustomerManagement() {
         showToast: true,
       });
       if (result.success) {
-        fetchCustomers();
+        await fetchCustomers();
+        await fetchCustomersCheck();
         onClose();
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const exportExcel = async () => {
+    try {
+      setLoading(true);
+      const result = await apiRequest<Customer[]>({
+        url: `/customers/export`,
+      });
+
+      if (result.success) {
+        const dataFormatted = result.data?.map((item) => ({
+          ID: item.id,
+          "Họ và tên": item.full_name,
+          "Năm sinh": item.year_of_birth,
+          "Số điện thoại": item.phone_number,
+          "Ghi chú": item.note,
+          "Người gọi": getCustomerRoleNoteLabel(item.role_note),
+          "Trạng thái": getCustomerStatusLabel(item.status),
+          Tổ: item.team_name,
+          "Thời gian nhập": formatDateTime(item.created_at),
+          "Thời gian chốt khách": item.updated_at
+            ? formatDateTime(item.updated_at)
+            : "",
+        }));
+        if (dataFormatted) {
+          exportToExcel(dataFormatted);
+        } else {
+          addToast({
+            title: "Error",
+            description: "Có lỗi trong việc xuất file",
+            color: "danger",
+          });
+        }
       }
     } finally {
       setLoading(false);
@@ -228,106 +323,320 @@ export default function CustomerManagement() {
 
   return (
     <div className="">
-      <div className="mb-4">
-        <Button
-          onPress={() => {
-            onOpen();
-            setSelectedData(null);
-            setDeletedData(null);
-          }}
-          color="primary"
-          className="mr-4"
-        >
-          Thêm khách hàng
-        </Button>
+      <div className="mb-4 flex flex-col sm:flex-row justify-between items-center gap-y-4 sm:gap-y-0">
+        <div className="flex flex-wrap gap-2">
+          <Button
+            onPress={() => {
+              onOpen();
+              setSelectedData(null);
+              setDeletedData(null);
+            }}
+            color="primary"
+          >
+            Thêm khách hàng
+          </Button>
 
-        {(user?.is_admin || user?.is_team_lead) && (
-          <>
-            <Button
-              onPress={() => {
-                const selectedKeysArray = Array.from(selectedKeys) as number[];
-                const selectedId: number = selectedKeysArray[0];
-                setSelectedData(customers[selectedId] || null);
-                setDeletedData(null);
-                onOpen();
-              }}
-              color="warning"
-              isDisabled={!Array.from(selectedKeys).length}
-              className="mr-4"
-            >
-              Cập nhật
-            </Button>
+          {(user?.is_admin || user?.is_team_lead) && (
+            <>
+              <Button
+                onPress={() => {
+                  const selectedKeysArray = Array.from(
+                    selectedKeys
+                  ) as number[];
+                  const selectedId: number = selectedKeysArray[0];
+                  setSelectedData(customers[selectedId] || null);
+                  setDeletedData(null);
+                  onOpen();
+                }}
+                color="warning"
+                isDisabled={!Array.from(selectedKeys).length}
+              >
+                Cập nhật
+              </Button>
 
-            <Button
-              onPress={() => {
-                const selectedKeysArray = Array.from(selectedKeys) as number[];
-                const selectedId: number = selectedKeysArray[0];
-                setSelectedData(null);
-                setDeletedData(customers[selectedId] || null);
-                onOpen();
-              }}
-              color="danger"
-              isDisabled={!Array.from(selectedKeys).length}
-            >
-              Xóa
-            </Button>
-          </>
-        )}
+              <Button
+                onPress={() => {
+                  const selectedKeysArray = Array.from(
+                    selectedKeys
+                  ) as number[];
+                  const selectedId: number = selectedKeysArray[0];
+                  setSelectedData(null);
+                  setDeletedData(customers[selectedId] || null);
+                  onOpen();
+                }}
+                color="danger"
+                isDisabled={!Array.from(selectedKeys).length}
+              >
+                Xóa
+              </Button>
+            </>
+          )}
+
+          <Button onPress={exportExcel} color="success">
+            Export
+          </Button>
+        </div>
       </div>
 
-      <Table
-        aria-label="Customer Table"
-        bottomContent={
-          <div className="flex w-full justify-center">
-            <Pagination
-              isCompact
-              showControls
-              showShadow
-              color="secondary"
-              page={page}
-              total={totalPages}
-              onChange={(p) => setPage(p)}
+      <div className="w-full flex gap-4">
+        <Table
+          aria-label="Customer Table"
+          bottomContent={
+            <div className="flex justify-center">
+              <Pagination
+                isCompact
+                showControls
+                showShadow
+                color="secondary"
+                page={page}
+                total={totalPages}
+                onChange={(p) => setPage(p)}
+              />
+            </div>
+          }
+          selectionMode="single"
+          color="warning"
+          selectedKeys={selectedKeys}
+          onSelectionChange={setSelectedKeys}
+          topContent={
+            <Input
+              type="text"
+              placeholder="Search..."
+              endContent={
+                <Button
+                  isIconOnly
+                  aria-label="Like"
+                  color="secondary"
+                  onPress={async () => {
+                    await fetchCustomers();
+                  }}
+                >
+                  <Search />
+                </Button>
+              }
+              value={search}
+              onChange={(val) => setSearch(val.target.value)}
+              classNames={{
+                inputWrapper: "pr-0",
+              }}
+              onKeyDown={async (event) => {
+                if (event.key === "Enter") {
+                  await fetchCustomers();
+                }
+              }}
             />
-          </div>
-        }
-        selectionMode="single"
-        color="warning"
-        selectedKeys={selectedKeys}
-        onSelectionChange={setSelectedKeys}
-      >
-        {/* Dynamically Generate Table Headers */}
-        <TableHeader className="sticky top-0 bg-white shadow-md z-10">
-          <TableColumn key="team_id">Tổ</TableColumn>
-          <TableColumn key="full_name">Họ và tên</TableColumn>
-          <TableColumn key="year_of_birth">Năm sinh</TableColumn>
-          <TableColumn key="status">Trạng thái</TableColumn>
-          <TableColumn key="note">Ghi chú</TableColumn>
-          <TableColumn key="created_at">Thời gian nhập</TableColumn>
-          <TableColumn key="note">Thời gian chốt khách</TableColumn>
-          <TableColumn key="note">Người chốt khách</TableColumn>
-        </TableHeader>
-
-        {/* Dynamically Generate Table Rows */}
-        <TableBody
-          isLoading={isLoading}
-          loadingContent={<Spinner label="Loading..." />}
+          }
+          onSortChange={setSortDescriptor}
+          sortDescriptor={sortDescriptor}
         >
-          {customers.map((item, index) => (
-            <TableRow key={index}>
-              <TableCell>{item.team_id || "-"}</TableCell>
-              <TableCell>{item.full_name || "-"}</TableCell>
-              <TableCell>{item.year_of_birth || "-"}</TableCell>
-              <TableCell>{getCustomerStatusLabel(item.status)}</TableCell>
-              <TableCell>{item.note || "-"}</TableCell>
-              <TableCell>{formatDateTime(item.created_at)}</TableCell>
-              <TableCell>
-                {item.status === "2" && formatDateTime(item.updated_at)}
-              </TableCell>
-              <TableCell>{item.updated_by || "-"}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          {/* Dynamically Generate Table Headers */}
+          <TableHeader className="sticky top-0 bg-white shadow-md z-10">
+            <TableColumn
+              className="bg-teal-500 text-white data-[hover=true]:text-gray-200"
+              key="full_name"
+              allowsSorting
+            >
+              Họ và tên
+            </TableColumn>
+            <TableColumn
+              className="bg-teal-500 text-white data-[hover=true]:text-gray-200"
+              key="year_of_birth"
+              allowsSorting
+            >
+              Năm sinh
+            </TableColumn>
+            <TableColumn
+              className="bg-teal-500 text-white data-[hover=true]:text-gray-200"
+              key="phone_number"
+              allowsSorting
+            >
+              Số điện thoại
+            </TableColumn>
+            <TableColumn
+              className="bg-teal-500 text-white data-[hover=true]:text-gray-200"
+              key="status"
+              allowsSorting
+            >
+              Trạng thái
+            </TableColumn>
+            <TableColumn
+              className="bg-teal-500 text-white data-[hover=true]:text-gray-200"
+              key="created_at"
+              allowsSorting
+            >
+              Thời gian nhập
+            </TableColumn>
+            <TableColumn
+              className="bg-teal-500 text-white data-[hover=true]:text-gray-200"
+              key="role_note"
+              allowsSorting
+            >
+              Người gọi
+            </TableColumn>
+            <TableColumn
+              className="bg-teal-500 text-white data-[hover=true]:text-gray-200"
+              key="note"
+              allowsSorting
+            >
+              Ghi chú
+            </TableColumn>
+          </TableHeader>
+
+          {/* Dynamically Generate Table Rows */}
+          <TableBody
+            isLoading={isLoading}
+            loadingContent={<Spinner label="Loading..." />}
+          >
+            {customers.map((item, index) => (
+              <TableRow key={index}>
+                <TableCell>{item.full_name || "-"}</TableCell>
+                <TableCell>{item.year_of_birth || "-"}</TableCell>
+                <TableCell>{item.phone_number || "-"}</TableCell>
+                <TableCell>{getCustomerStatusLabel(item.status)}</TableCell>
+                <TableCell>{formatDateTime(item.created_at)}</TableCell>
+                <TableCell>
+                  {getCustomerRoleNoteLabel(item.role_note)}
+                </TableCell>
+                <TableCell>{item.note || "-"}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+
+        <Table
+          aria-label="Customer Table"
+          bottomContent={
+            <div className="flex w-full justify-center">
+              <Pagination
+                isCompact
+                showControls
+                showShadow
+                color="secondary"
+                page={pageCheck}
+                total={totalPagesCheck}
+                onChange={(p) => setPageCheck(p)}
+              />
+            </div>
+          }
+          color="warning"
+          // selectionMode="single"
+          // selectedKeys={selectedKeys}
+          // onSelectionChange={setSelectedKeys}
+          topContent={
+            <Input
+              type="text"
+              placeholder="Search..."
+              endContent={
+                <Button
+                  isIconOnly
+                  aria-label="Like"
+                  color="secondary"
+                  onPress={async () => {
+                    await fetchCustomersCheck();
+                  }}
+                >
+                  <Search />
+                </Button>
+              }
+              value={searchCheck}
+              onChange={(val) => setSearchCheck(val.target.value)}
+              classNames={{
+                inputWrapper: "pr-0",
+              }}
+              onKeyDown={async (event) => {
+                if (event.key === "Enter") {
+                  await fetchCustomersCheck();
+                }
+              }}
+            />
+          }
+          onSortChange={setSortDescriptorCheck}
+          sortDescriptor={sortDescriptorCheck}
+        >
+          {/* Dynamically Generate Table Headers */}
+          <TableHeader className="sticky top-0 bg-white shadow-md z-10">
+            <TableColumn
+              className="bg-teal-500 text-white data-[hover=true]:text-gray-200"
+              key="team_name"
+              allowsSorting
+            >
+              Tổ
+            </TableColumn>
+            <TableColumn
+              className="bg-teal-500 text-white data-[hover=true]:text-gray-200"
+              key="full_name"
+              allowsSorting
+            >
+              Họ và tên
+            </TableColumn>
+            <TableColumn
+              className="bg-teal-500 text-white data-[hover=true]:text-gray-200"
+              key="year_of_birth"
+              allowsSorting
+            >
+              Năm sinh
+            </TableColumn>
+            <TableColumn
+              className="bg-teal-500 text-white data-[hover=true]:text-gray-200"
+              key="status"
+              allowsSorting
+            >
+              Trạng thái
+            </TableColumn>
+            <TableColumn
+              className="bg-teal-500 text-white data-[hover=true]:text-gray-200"
+              key="role_note"
+              allowsSorting
+            >
+              NV
+            </TableColumn>
+            <TableColumn
+              className="bg-teal-500 text-white data-[hover=true]:text-gray-200"
+              key="note"
+              allowsSorting
+            >
+              Ghi chú
+            </TableColumn>
+            <TableColumn
+              className="bg-teal-500 text-white data-[hover=true]:text-gray-200"
+              key="created_at"
+              width={180}
+              allowsSorting
+            >
+              Thời gian nhập
+            </TableColumn>
+            <TableColumn
+              className="bg-teal-500 text-white data-[hover=true]:text-gray-200"
+              key="updated_at"
+              width={180}
+              allowsSorting
+            >
+              Thời gian chốt khách
+            </TableColumn>
+          </TableHeader>
+
+          {/* Dynamically Generate Table Rows */}
+          <TableBody
+            isLoading={isLoading}
+            loadingContent={<Spinner label="Loading..." />}
+          >
+            {customersCheck.map((item, index) => (
+              <TableRow key={index}>
+                <TableCell>{item.team_name || "-"}</TableCell>
+                <TableCell>{item.full_name || "-"}</TableCell>
+                <TableCell>{item.year_of_birth || "-"}</TableCell>
+                <TableCell>{getCustomerStatusLabel(item.status)}</TableCell>
+                <TableCell>
+                  {getCustomerRoleNoteLabel(item.role_note)}
+                </TableCell>
+                <TableCell>{item.note || "-"}</TableCell>
+                <TableCell>{formatDateTime(item.created_at)}</TableCell>
+                <TableCell>{formatDateTime(item.updated_at)}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
 
       <Modal
         isOpen={isOpen}
@@ -469,7 +778,7 @@ export default function CustomerManagement() {
                     labelPlacement="outside"
                     placeholder="Nhập ghi chú"
                     variant="bordered"
-                    defaultValue={selectedData?.note}
+                    defaultValue={selectedData?.note || ""}
                   />
                 </ModalBody>
 
