@@ -97,7 +97,6 @@ export default function EmployeesManagement() {
 
     if (!data.username) validationErrors.username = "Username is required";
     if (!data.name) validationErrors.name = "Name is required";
-    if (!data.status) validationErrors.status = "Status is required";
     return validationErrors;
   };
 
@@ -239,6 +238,7 @@ export default function EmployeesManagement() {
           <TableColumn key="name">Tên</TableColumn>
           <TableColumn key="is_admin">Chức vụ</TableColumn>
           <TableColumn key="team_id">Tổ</TableColumn>
+          <TableColumn key="status">Trạng thái</TableColumn>
           <TableColumn key="action"> </TableColumn>
         </TableHeader>
         <TableBody
@@ -257,6 +257,9 @@ export default function EmployeesManagement() {
                   : "Tổ viên"}
               </TableCell>
               <TableCell>{getTeamNameById(item.team_id)}</TableCell>
+              <TableCell>
+                {item.status === "1" ? "Hoạt động" : "Không hoạt động"}
+              </TableCell>
               <TableCell>
                 {user?.is_admin && (
                   <Button
@@ -355,7 +358,7 @@ export default function EmployeesManagement() {
                   label="Status"
                   labelPlacement="outside"
                   placeholder="Select status"
-                  defaultSelectedKeys={["1"]}
+                  defaultSelectedKeys={[selectedData?.status || "1"]}
                 >
                   <SelectItem key="1">Active</SelectItem>
                   <SelectItem key="0">Inactive</SelectItem>
