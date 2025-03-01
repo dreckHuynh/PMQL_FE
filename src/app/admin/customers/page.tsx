@@ -176,6 +176,23 @@ export default function CustomerManagement() {
 
   const createCustomer = async (data: { [k: string]: FormDataEntryValue }) => {
     try {
+      // Lấy thời gian hiện tại với định dạng "YYYY-MM-DD HH:mm:ss.SSS"
+      const formatDate = (date: Date) => {
+        const pad = (num: number, size: number = 2) =>
+          String(num).padStart(size, "0");
+        return (
+          `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
+            date.getDate()
+          )} ` +
+          `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(
+            date.getSeconds()
+          )}.` +
+          `${pad(date.getMilliseconds(), 3)}`
+        );
+      };
+
+      const currentTime = formatDate(new Date());
+
       const result = await apiRequest<Customer>({
         url: "/customers",
         method: "POST",
@@ -187,6 +204,8 @@ export default function CustomerManagement() {
 
           created_by: Number(user?.id),
           updated_by: Number(user?.id),
+          created_at: currentTime,
+          updated_at: currentTime,
         },
         showToast: true,
       });
@@ -205,6 +224,23 @@ export default function CustomerManagement() {
     try {
       delete selectedData?.created_by;
 
+      // Lấy thời gian hiện tại với định dạng "YYYY-MM-DD HH:mm:ss.SSS"
+      const formatDate = (date: Date) => {
+        const pad = (num: number, size: number = 2) =>
+          String(num).padStart(size, "0");
+        return (
+          `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
+            date.getDate()
+          )} ` +
+          `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(
+            date.getSeconds()
+          )}.` +
+          `${pad(date.getMilliseconds(), 3)}`
+        );
+      };
+
+      const currentTime = formatDate(new Date());
+
       const result = await apiRequest<Customer>({
         url: "/customers",
         method: "PUT",
@@ -213,7 +249,8 @@ export default function CustomerManagement() {
           ...data,
           team_id: Number(data.team_id || selectedData?.team_id),
           updated_by: Number(user?.id),
-          updated_at: new Date().toISOString(),
+          created_at: currentTime,
+          updated_at: currentTime,
         },
         showToast: true,
       });
@@ -733,7 +770,10 @@ export default function CustomerManagement() {
                     </Select>
 
                     <Select
-                      isDisabled={!selectedData}
+                      isDisabled={
+                        !(user?.is_admin || user?.is_team_lead) &&
+                        selectedData?.status == "2"
+                      }
                       disableSelectorIconRotation
                       name="status"
                       label="Trạng thái"
