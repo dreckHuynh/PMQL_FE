@@ -336,24 +336,22 @@ export default function CustomerManagement() {
             Thêm khách hàng
           </Button>
 
-          {(user?.is_admin || user?.is_team_lead) && (
-            <>
-              <Button
-                onPress={() => {
-                  const selectedKeysArray = Array.from(
-                    selectedKeys
-                  ) as number[];
-                  const selectedId: number = selectedKeysArray[0];
-                  setSelectedData(customers[selectedId] || null);
-                  setDeletedData(null);
-                  onOpen();
-                }}
-                color="warning"
-                isDisabled={!Array.from(selectedKeys).length}
-              >
-                Cập nhật
-              </Button>
+          <>
+            <Button
+              onPress={() => {
+                const selectedKeysArray = Array.from(selectedKeys) as number[];
+                const selectedId: number = selectedKeysArray[0];
+                setSelectedData(customers[selectedId] || null);
+                setDeletedData(null);
+                onOpen();
+              }}
+              color="warning"
+              isDisabled={!Array.from(selectedKeys).length}
+            >
+              Cập nhật
+            </Button>
 
+            {(user?.is_admin || user?.is_team_lead) && (
               <Button
                 onPress={() => {
                   const selectedKeysArray = Array.from(
@@ -369,8 +367,8 @@ export default function CustomerManagement() {
               >
                 Xóa
               </Button>
-            </>
-          )}
+            )}
+          </>
 
           <Button onPress={exportExcel} color="success">
             Export
