@@ -22,7 +22,7 @@ export default function RootLayout({
     {
       href: "/admin/teams",
       label: "Tổ",
-      hidden: !user?.is_admin, // admin can access
+      hidden: !user?.is_admin,
     },
     { href: "/admin/customers", label: "Khách hàng" },
     {
