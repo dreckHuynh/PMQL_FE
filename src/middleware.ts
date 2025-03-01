@@ -24,9 +24,9 @@ export function middleware(req: NextRequest) {
       return NextResponse.redirect(new URL("/forbidden", req.url)); // Forbidden page
     }
 
-    if (req.nextUrl.pathname.endsWith("/statistical") && !user?.is_admin) {
-      return NextResponse.redirect(new URL("/forbidden", req.url)); // Forbidden page
-    }
+    // if (req.nextUrl.pathname.endsWith("/statistical") && !user?.is_admin) {
+    //   return NextResponse.redirect(new URL("/forbidden", req.url)); // Forbidden page
+    // }
 
     return NextResponse.next();
   } catch {
