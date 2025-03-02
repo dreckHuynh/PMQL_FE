@@ -63,7 +63,6 @@ export default function CustomerManagement() {
   const [totalPagesCheck, setTotalPagesCheck] = useState(1);
   const [total, setTotal] = useState(1);
 
-  console.log("total", total);
   console.log(`totalPage`, totalPages);
   console.log(`total`, totalPagesCheck);
 
@@ -117,6 +116,8 @@ export default function CustomerManagement() {
       if (result.success) {
         setCustomersCheck(result.data || []);
         setTotalPagesCheck(result.totalPages || 0);
+
+        console.log("total", total);
         setTotal(result.total || 0);
       }
     } catch (error) {
