@@ -542,7 +542,9 @@ export default function CustomerManagement() {
           >
             {customers.map((item, index) => (
               <TableRow key={index}>
-                <TableCell>{total - Number(page - 1) + index}</TableCell>
+                <TableCell>
+                  {total - Number(page - 1) * rowsPerPage - index}
+                </TableCell>
                 <TableCell>
                   {item.full_name || "-"}
                   {item.full_name && (
