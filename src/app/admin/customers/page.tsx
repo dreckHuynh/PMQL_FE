@@ -536,7 +536,7 @@ export default function CustomerManagement() {
           >
             {customers.map((item, index) => (
               <TableRow key={index}>
-                <TableCell>{Number(index) + 1}</TableCell>
+                <TableCell>{customers.length - Number(index)}</TableCell>
                 <TableCell>
                   {item.full_name || "-"}
                   {item.full_name && (
