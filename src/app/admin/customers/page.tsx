@@ -731,7 +731,7 @@ export default function CustomerManagement() {
                     color="danger"
                     type="button"
                     onPress={() => {
-                      if (deletedData.status != "2") {
+                      if (deletedData.status === "2") {
                         alert(
                           "Không thể xóa khách hàng này vì trạng thái không hợp lệ!"
                         );
