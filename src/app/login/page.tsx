@@ -72,14 +72,14 @@ export default function LoginPage() {
 
         <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm space-y-10">
           <Input
-            label="Username"
+            label="Tên đăng nhập"
             labelPlacement="outside"
             name="username"
             placeholder="Enter your username"
           />
 
           <Input
-            label="Password"
+            label="Mật Khẩu"
             labelPlacement="outside"
             name="password"
             type="password"

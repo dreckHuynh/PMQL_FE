@@ -68,7 +68,7 @@ export default function UpdatePasswordPage() {
 
         <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm space-y-10">
           <Input
-            label="Password"
+            label="Mật khẩu"
             labelPlacement="outside"
             name="password"
             placeholder="Enter your password"
@@ -90,7 +90,7 @@ export default function UpdatePasswordPage() {
           />
 
           <Input
-            label="Re-enter Password"
+            label="Nhập lại mật khẩu"
             labelPlacement="outside"
             name="confirmPassword"
             placeholder="Re-enter your password"
