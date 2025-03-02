@@ -523,7 +523,6 @@ export default function CustomerManagement() {
           >
             {customers.map((item, index) => (
               <TableRow key={index}>
-                <TableCell>{item.team_name || "-"}</TableCell>
                 <TableCell>{item.full_name || "-"}</TableCell>
                 <TableCell>{item.year_of_birth || "-"}</TableCell>
                 <TableCell>{item.phone_number || "-"}</TableCell>
