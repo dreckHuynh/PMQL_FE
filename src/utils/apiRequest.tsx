@@ -13,6 +13,7 @@ export interface ApiResponse<T> {
   success: boolean;
   data?: T;
   totalPages?: number;
+  total?: number;
   error?: string;
   message?: string;
 }

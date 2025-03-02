@@ -61,6 +61,7 @@ export default function CustomerManagement() {
   const [totalPages, setTotalPages] = useState(1);
   const [pageCheck, setPageCheck] = useState(1);
   const [totalPagesCheck, setTotalPagesCheck] = useState(1);
+  const [total, setTotal] = useState(1);
 
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
     column: "created_at",
@@ -112,6 +113,7 @@ export default function CustomerManagement() {
       if (result.success) {
         setCustomersCheck(result.data || []);
         setTotalPagesCheck(result.totalPages || 0);
+        setTotal(result.total || 0);
       }
     } catch (error) {
       console.error("Failed to fetch customers:", error);
@@ -536,7 +538,7 @@ export default function CustomerManagement() {
           >
             {customers.map((item, index) => (
               <TableRow key={index}>
-                <TableCell>{customers.length - Number(index)}</TableCell>
+                <TableCell>{total - (Number(page - 1) + index)}</TableCell>
                 <TableCell>
                   {item.full_name || "-"}
                   {item.full_name && (
