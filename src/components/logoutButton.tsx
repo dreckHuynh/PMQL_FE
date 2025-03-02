@@ -18,7 +18,7 @@ export default function LogoutButton() {
 
   return (
     <Button color="default" variant="ghost" onPress={handleLogout}>
-      Logout
+      Đăng xuất
     </Button>
   );
 }

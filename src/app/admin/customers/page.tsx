@@ -407,7 +407,7 @@ export default function CustomerManagement() {
             )}
           </>
           <Button onPress={exportExcel} color="success">
-            Export
+            Xuất file Excel
           </Button>
         </div>
       </div>

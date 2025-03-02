@@ -89,7 +89,7 @@ export default function StatisticalPage() {
   return (
     <div className="">
       <div className="mb-4 h-11">
-        <Button onPress={exportExcel}>Export</Button>
+        <Button onPress={exportExcel}>Xuất file Excel</Button>
       </div>
 
       <Tabs
