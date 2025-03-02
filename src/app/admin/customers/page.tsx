@@ -727,7 +727,19 @@ export default function CustomerManagement() {
                   <Button color="danger" variant="flat" onPress={onClose}>
                     Đóng
                   </Button>
-                  <Button color="danger" type="button" onPress={deleteCustomer}>
+                  <Button
+                    color="danger"
+                    type="button"
+                    onPress={() => {
+                      if (deletedData.status !== "2") {
+                        alert(
+                          "Không thể xóa khách hàng này vì trạng thái không hợp lệ!"
+                        );
+                        return;
+                      }
+                      deleteCustomer();
+                    }}
+                  >
                     Xóa
                   </Button>
                 </ModalFooter>
