@@ -406,7 +406,6 @@ export default function CustomerManagement() {
               </Button>
             )}
           </>
-
           <Button onPress={exportExcel} color="success">
             Export
           </Button>
@@ -468,6 +467,13 @@ export default function CustomerManagement() {
           <TableHeader className="sticky top-0 bg-white shadow-md z-10">
             <TableColumn
               className="bg-teal-500 text-white data-[hover=true]:text-gray-200"
+              key="team_name"
+              allowsSorting
+            >
+              Tổ
+            </TableColumn>
+            <TableColumn
+              className="bg-teal-500 text-white data-[hover=true]:text-gray-200"
               key="full_name"
               allowsSorting
             >
@@ -524,6 +530,7 @@ export default function CustomerManagement() {
           >
             {customers.map((item, index) => (
               <TableRow key={index}>
+                <TableCell>{item.team_name || "-"}</TableCell>
                 <TableCell>{item.full_name || "-"}</TableCell>
                 <TableCell>{item.year_of_birth || "-"}</TableCell>
                 <TableCell>{item.phone_number || "-"}</TableCell>
@@ -756,7 +763,7 @@ export default function CustomerManagement() {
                       selectorIcon={<ChevronUpDownIcon />}
                       defaultSelectedKeys={
                         selectedData
-                          ? [`${selectedData.team_id}` || ""]
+                          ? [`${selectedData.team_id}` || 1]
                           : [`${user?.team_id}` || `${teams?.[0]?.id}`]
                       }
                     >
@@ -772,7 +779,7 @@ export default function CustomerManagement() {
                     <Select
                       isDisabled={
                         !(user?.is_admin || user?.is_team_lead) &&
-                        selectedData?.status == "2"
+                        selectedData?.status === "2"
                       }
                       disableSelectorIconRotation
                       name="status"
