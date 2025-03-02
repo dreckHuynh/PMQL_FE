@@ -549,12 +549,12 @@ export default function CustomerManagement() {
                 </TableCell>
                 <TableCell>{item.year_of_birth || "-"}</TableCell>
                 <TableCell>
-                  {item.phone_number || "-"}
+                  {item.phone_number ? item.phone_number.slice(-9) : "-"}
                   {item.phone_number && (
                     <Copy
                       className="ml-2 cursor-pointer text-gray-500 hover:text-black"
                       size={16}
-                      onClick={() => handleCopy(item.phone_number)}
+                      onClick={() => handleCopy(item.phone_number.slice(-9))}
                     />
                   )}
                 </TableCell>
