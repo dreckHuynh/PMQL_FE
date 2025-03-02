@@ -388,7 +388,7 @@ export default function CustomerManagement() {
               Cập nhật
             </Button>
 
-            {(user?.is_admin || user?.is_team_lead) && (
+            {user?.is_admin && (
               <Button
                 onPress={() => {
                   const selectedKeysArray = Array.from(
@@ -465,13 +465,6 @@ export default function CustomerManagement() {
         >
           {/* Dynamically Generate Table Headers */}
           <TableHeader className="sticky top-0 bg-white shadow-md z-10">
-            <TableColumn
-              className="bg-teal-500 text-white data-[hover=true]:text-gray-200"
-              key="team_name"
-              allowsSorting
-            >
-              Tổ
-            </TableColumn>
             <TableColumn
               className="bg-teal-500 text-white data-[hover=true]:text-gray-200"
               key="full_name"
