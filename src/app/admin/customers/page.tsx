@@ -1,5 +1,7 @@
 "use client";
 
+import { Copy } from "lucide-react";
+
 import { FormEvent, useEffect, useState } from "react";
 import {
   Table,
@@ -69,6 +71,11 @@ export default function CustomerManagement() {
       column: "updated_at",
       direction: "ascending",
     });
+
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text);
+    alert(`Đã sao chép: ${text}`);
+  };
 
   const rowsPerPage = 10;
 
@@ -387,7 +394,6 @@ export default function CustomerManagement() {
             >
               Cập nhật
             </Button>
-
             {(user?.is_admin || user?.is_team_lead) && (
               <Button
                 onPress={() => {
@@ -523,9 +529,27 @@ export default function CustomerManagement() {
           >
             {customers.map((item, index) => (
               <TableRow key={index}>
-                <TableCell>{item.full_name || "-"}</TableCell>
+                <TableCell>
+                  {item.full_name || "-"}
+                  {item.full_name && (
+                    <Copy
+                      className="ml-2 cursor-pointer text-gray-500 hover:text-black"
+                      size={16}
+                      onClick={() => handleCopy(item.full_name)}
+                    />
+                  )}
+                </TableCell>
                 <TableCell>{item.year_of_birth || "-"}</TableCell>
-                <TableCell>{item.phone_number || "-"}</TableCell>
+                <TableCell>
+                  {item.phone_number || "-"}
+                  {item.phone_number && (
+                    <Copy
+                      className="ml-2 cursor-pointer text-gray-500 hover:text-black"
+                      size={16}
+                      onClick={() => handleCopy(item.phone_number)}
+                    />
+                  )}
+                </TableCell>
                 <TableCell>{getCustomerStatusLabel(item.status)}</TableCell>
                 <TableCell>{formatDateTime(item.created_at)}</TableCell>
                 <TableCell>
