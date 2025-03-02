@@ -780,7 +780,7 @@ export default function CustomerManagement() {
                       placeholder="Chọn trạng thái khách hàng"
                       selectorIcon={<ChevronUpDownIcon />}
                       defaultSelectedKeys={
-                        selectedData ? [selectedData?.status] : ["0"]
+                        selectedData ? [selectedData?.status] : ["1"]
                       } // Ensure this is a string
                     >
                       {CUSTOMER_STATUS.map((status) => (
