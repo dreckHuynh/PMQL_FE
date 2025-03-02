@@ -388,7 +388,7 @@ export default function CustomerManagement() {
               Cập nhật
             </Button>
 
-            {user?.is_admin && (
+            {(user?.is_admin || user?.is_team_lead) && (
               <Button
                 onPress={() => {
                   const selectedKeysArray = Array.from(
