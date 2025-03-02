@@ -473,6 +473,13 @@ export default function CustomerManagement() {
           <TableHeader className="sticky top-0 bg-white shadow-md z-10">
             <TableColumn
               className="bg-teal-500 text-white data-[hover=true]:text-gray-200"
+              key="index"
+              allowsSorting
+            >
+              ID/STT
+            </TableColumn>
+            <TableColumn
+              className="bg-teal-500 text-white data-[hover=true]:text-gray-200"
               key="full_name"
               allowsSorting
             >
@@ -529,6 +536,7 @@ export default function CustomerManagement() {
           >
             {customers.map((item, index) => (
               <TableRow key={index}>
+                <TableCell>{Number(index) + 1}</TableCell>
                 <TableCell>
                   {item.full_name || "-"}
                   {item.full_name && (
