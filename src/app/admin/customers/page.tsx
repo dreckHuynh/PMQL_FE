@@ -61,7 +61,7 @@ export default function CustomerManagement() {
   const [totalPages, setTotalPages] = useState(1);
   const [pageCheck, setPageCheck] = useState(1);
   const [totalPagesCheck, setTotalPagesCheck] = useState(1);
-  // const [total, setTotal] = useState(1);
+  const [total, setTotal] = useState(1);
 
   console.log(`totalPage`, totalPages);
   console.log(`total`, totalPagesCheck);
@@ -117,7 +117,6 @@ export default function CustomerManagement() {
         setCustomersCheck(result.data || []);
         setTotalPagesCheck(result.totalPages || 0);
         console.log("total", result.total, result);
-        // setTotal(result.total || 0);
       }
     } catch (error) {
       console.error("Failed to fetch customers:", error);
@@ -141,6 +140,7 @@ export default function CustomerManagement() {
       if (result.success) {
         setCustomers(result.data || []);
         setTotalPages(result.totalPages || 0);
+        setTotal(result.total || 0);
       }
     } catch (error) {
       console.error("Failed to fetch customers:", error);
@@ -542,7 +542,9 @@ export default function CustomerManagement() {
           >
             {customers.map((item, index) => (
               <TableRow key={index}>
-                <TableCell>{index}</TableCell>
+                <TableCell>
+                  {total - rowsPerPage * (page - 1) - index}
+                </TableCell>
                 <TableCell>
                   {item.full_name || "-"}
                   {item.full_name && (
