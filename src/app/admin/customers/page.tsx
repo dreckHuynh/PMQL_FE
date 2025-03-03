@@ -116,8 +116,8 @@ export default function CustomerManagement() {
       if (result.success) {
         setCustomersCheck(result.data || []);
         setTotalPagesCheck(result.totalPages || 0);
-        console.log("total", result.total);
-        setTotal(result.total || 0);
+        console.log("total", result.total, result);
+        // setTotal(result.total || 0);
       }
     } catch (error) {
       console.error("Failed to fetch customers:", error);
