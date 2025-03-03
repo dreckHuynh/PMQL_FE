@@ -814,8 +814,7 @@ export default function CustomerManagement() {
 
                     <Select
                       isDisabled={
-                        !(user?.is_admin || user?.is_team_lead) &&
-                        selectedData?.status === "2"
+                        !user?.is_admin && selectedData?.status === "2"
                       }
                       disableSelectorIconRotation
                       name="status"
