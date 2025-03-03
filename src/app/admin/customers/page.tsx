@@ -765,19 +765,17 @@ export default function CustomerManagement() {
                       defaultValue={selectedData?.full_name}
                     />
 
-                    <Select
+                    <Input
                       isRequired
                       label="Năm sinh"
                       name="year_of_birth"
                       placeholder="Nhập năm sinh"
                       labelPlacement="outside"
-                      defaultSelectedKeys={[selectedData?.year_of_birth || ""]}
-                    >
-                      {Array.from({ length: 100 }, (_, i) => {
-                        const year = (new Date().getFullYear() - i).toString(); // Convert to string
-                        return <SelectItem key={year}>{year}</SelectItem>;
-                      })}
-                    </Select>
+                      maxLength={4} // Giới hạn độ dài 4 ký tự cho năm
+                      variant="bordered"
+                      type="number" // Chỉ cho phép nhập số
+                      defaultValue={selectedData?.year_of_birth}
+                    />
 
                     <Input
                       isRequired
