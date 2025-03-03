@@ -61,7 +61,7 @@ export default function CustomerManagement() {
   const [totalPages, setTotalPages] = useState(1);
   const [pageCheck, setPageCheck] = useState(1);
   const [totalPagesCheck, setTotalPagesCheck] = useState(1);
-  const [total, setTotal] = useState(1);
+  // const [total, setTotal] = useState(1);
 
   console.log(`totalPage`, totalPages);
   console.log(`total`, totalPagesCheck);
@@ -542,7 +542,7 @@ export default function CustomerManagement() {
           >
             {customers.map((item, index) => (
               <TableRow key={index}>
-                <TableCell>{index + 1}</TableCell>
+                <TableCell>{index}</TableCell>
                 <TableCell>
                   {item.full_name || "-"}
                   {item.full_name && (
